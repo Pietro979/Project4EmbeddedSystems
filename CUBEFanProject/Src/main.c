@@ -148,7 +148,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_ADC_Start_IT(&hadc);
   HAL_TIM_Base_Start_IT(&htim10);
-  //HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_3, &Duty, 1);
+  HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_3, &Duty, 1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
