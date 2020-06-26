@@ -62,7 +62,7 @@ uint16_t ADC_Temperature;
 uint8_t uint8_SetPoint_Temperature[4];
 
 uint32_t Duty = 0;
-uint8_t znak = '5';
+uint8_t znak = '0';
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -99,6 +99,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	HAL_UART_Transmit_IT(&huart1, &znak, 1); // Rozpoczecie nadawania danych z wykorzystaniem przerwan
 	 HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_5);
 	}
+	if (znak == '9') znak = '0';
+	else znak = znak + 1;
 }
 /* USER CODE END PFP */
 
