@@ -78,11 +78,8 @@ static void MX_ADC_Init(void);
 /* USER CODE BEGIN PFP */
 void calculate7segments(void)
 {
-	//division = (Duty /10)+48;
-	//if (Duty==100) znak = '9';
-	//eilse znak = (uint8_t)((Duty/10) + 48)  ;
-	if (znak == '9') znak = '0';
-	else znak = znak +1;
+	if (Duty==100) znak = '9';
+	else znak = (uint8_t)((Duty/10) + 48)  ;
 }
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc1)
 {
