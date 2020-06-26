@@ -197,7 +197,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
  }
 
  //HAL_UART_Transmit_IT(&huart2, Data, size); // Rozpoczecie nadawania danych z wykorzystaniem przerwan
- HAL_UART_Transmit_IT(&huart2, &Received, 1);
+ //HAL_UART_Transmit_IT(&huart2, &Received, 1);
+ HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_5);
  HAL_UART_Receive_IT(&huart1, &Received, 1); // Ponowne w³¹czenie nas³uchiwania
 
 }
@@ -245,8 +246,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_5);
-	  HAL_Delay(1000);
+
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

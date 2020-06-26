@@ -62,6 +62,7 @@ uint16_t ADC_Temperature;
 uint8_t uint8_SetPoint_Temperature[4];
 
 uint32_t Duty = 0;
+uint8_t division;
 uint8_t znak = '0';
 /* USER CODE END PV */
 
@@ -70,37 +71,41 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_USART2_UART_Init(void);
-static void MX_ADC_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM10_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_ADC_Init(void);
 /* USER CODE BEGIN PFP */
+void calculate7segments(void)
+{
+	//division = (Duty /10)+48;
+	//if (Duty==100) znak = '9';
+	//eilse znak = (uint8_t)((Duty/10) + 48)  ;
+	if (znak == '9') znak = '0';
+	else znak = znak +1;
+}
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc1)
 {
 	ADC_Temperature = HAL_ADC_GetValue(&hadc);
 	SetPoint_Temperature = ADC_Temperature*temperatureRange/(ADCResolution-1) + minTemperature ;
 	Duty = (uint32_t)(ADC_Temperature*100/(ADCResolution-1));
+
 }
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
-	static uint16_t cnt = 0; // Licznik wyslanych wiadomosci
-	uint8_t data;// Tablica przechowujaca wysylana wiadomosc.
-	uint16_t size = 0; // Rozmiar wysylanej wiadomosci ++cnt; // Zwiekszenie licznika wyslanych wiadomosci.
+
 
 	if(htim->Instance == TIM10)
 	{
 
-	 ++cnt; // Zwiekszenie licznika wyslanych wiadomosci.
-	 size = sprintf(data, "Liczba wyslanych wiadomosci: %d.\n\r", cnt); // Stworzenie wiadomosci do wyslania oraz przypisanie ilosci wysylanych znakow do zmiennej size.
-	 //HAL_UART_Transmit_IT(&huart1, data, size); // Rozpoczecie nadawania danych z wykorzystaniem przerwan
-	 HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_4);
+	calculate7segments();
 
 
-	HAL_UART_Transmit_IT(&huart2, &znak, 1); // Rozpoczecie nadawania danych z wykorzystaniem przerwan
+	//HAL_UART_Transmit_IT(&huart2, &znak, 1); // Rozpoczecie nadawania danych z wykorzystaniem przerwan
 	HAL_UART_Transmit_IT(&huart1, &znak, 1); // Rozpoczecie nadawania danych z wykorzystaniem przerwan
-	 HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_5);
+	HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_5);
 	}
-	if (znak == '9') znak = '0';
-	else znak = znak + 1;
+
 }
 /* USER CODE END PFP */
 
@@ -139,22 +144,20 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_USART2_UART_Init();
-  MX_ADC_Init();
   MX_TIM3_Init();
   MX_TIM10_Init();
   MX_USART1_UART_Init();
+  MX_ADC_Init();
   /* USER CODE BEGIN 2 */
   HAL_ADC_Start_IT(&hadc);
   HAL_TIM_Base_Start_IT(&htim10);
-  HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_3, &Duty, 1);
+  //HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_3, &Duty, 1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -226,7 +229,7 @@ static void MX_ADC_Init(void)
   hadc.Init.Resolution = ADC_RESOLUTION_10B;
   hadc.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc.Init.ScanConvMode = ADC_SCAN_DISABLE;
-  hadc.Init.EOCSelection = ADC_EOC_SEQ_CONV;
+  hadc.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   hadc.Init.LowPowerAutoWait = ADC_AUTOWAIT_DISABLE;
   hadc.Init.LowPowerAutoPowerOff = ADC_AUTOPOWEROFF_DISABLE;
   hadc.Init.ChannelsBank = ADC_CHANNELS_BANK_A;
@@ -242,9 +245,9 @@ static void MX_ADC_Init(void)
   }
   /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
   */
-  sConfig.Channel = ADC_CHANNEL_0;
+  sConfig.Channel = ADC_CHANNEL_1;
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_4CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_48CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -332,7 +335,7 @@ static void MX_TIM10_Init(void)
 
   /* USER CODE END TIM10_Init 1 */
   htim10.Instance = TIM10;
-  htim10.Init.Prescaler = 9999;
+  htim10.Init.Prescaler = 15999;
   htim10.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim10.Init.Period = 3199;
   htim10.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -450,7 +453,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4|GPIO_PIN_5, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
@@ -461,8 +464,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA4 PA5 */
-  GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_5;
+  /*Configure GPIO pin : PA5 */
+  GPIO_InitStruct.Pin = GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
