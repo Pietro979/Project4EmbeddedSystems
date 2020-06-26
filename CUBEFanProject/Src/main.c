@@ -62,6 +62,7 @@ uint16_t ADC_Temperature;
 uint8_t uint8_SetPoint_Temperature[4];
 
 uint32_t Duty = 0;
+uint8_t znak = '5';
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -90,8 +91,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 
 	 ++cnt; // Zwiekszenie licznika wyslanych wiadomosci.
 	 size = sprintf(data, "Liczba wyslanych wiadomosci: %d.\n\r", cnt); // Stworzenie wiadomosci do wyslania oraz przypisanie ilosci wysylanych znakow do zmiennej size.
-	 HAL_UART_Transmit_IT(&huart1, data, size); // Rozpoczecie nadawania danych z wykorzystaniem przerwan
+	 //HAL_UART_Transmit_IT(&huart1, data, size); // Rozpoczecie nadawania danych z wykorzystaniem przerwan
 	 HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_4);
+
+
+	HAL_UART_Transmit_IT(&huart2, &znak, 1); // Rozpoczecie nadawania danych z wykorzystaniem przerwan
+	HAL_UART_Transmit_IT(&huart1, &znak, 1); // Rozpoczecie nadawania danych z wykorzystaniem przerwan
+	 HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_5);
 	}
 }
 /* USER CODE END PFP */
@@ -140,11 +146,12 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim10);
   HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_3, &Duty, 1);
   /* USER CODE END 2 */
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	 //HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_6);
+
 
     /* USER CODE END WHILE */
 
@@ -441,7 +448,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4|GPIO_PIN_5, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
@@ -452,8 +459,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PA4 */
-  GPIO_InitStruct.Pin = GPIO_PIN_4;
+  /*Configure GPIO pins : PA4 PA5 */
+  GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

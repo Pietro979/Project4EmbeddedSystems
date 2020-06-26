@@ -60,6 +60,7 @@ void DMA1_Channel2_IRQHandler(void);
 void ADC1_IRQHandler(void);
 void TIM10_IRQHandler(void);
 void USART1_IRQHandler(void);
+void USART2_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */
