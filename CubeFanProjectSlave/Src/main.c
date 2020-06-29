@@ -41,11 +41,14 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+SPI_HandleTypeDef hspi2;
+
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 uint8_t Received;
+uint8_t Received2;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -53,6 +56,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_SPI2_Init(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 void drawNumber(int i)
@@ -180,27 +184,18 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
  // instrukcja warunkowa
  char k ='k';
  drawNumber(atoi(&Received));
- switch (atoi(&Received)) {
 
- case 0: // Jezeli odebrany zostanie znak 0
- size = sprintf(Data, "STOP\n\r");
- break;
-
- case 1: // Jezeli odebrany zostanie znak 1
- size = sprintf(Data, "START\n\r");
- //HAL_GPIO_WritePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin, GPIO_PIN_SET);
- break;
-
- default: // Jezeli odebrano nieobslugiwany znak
- size = sprintf(Data, "Odebrano nieznany znak: %c\n\r", Received);
- break;
- }
 
  //HAL_UART_Transmit_IT(&huart2, Data, size); // Rozpoczecie nadawania danych z wykorzystaniem przerwan
  //HAL_UART_Transmit_IT(&huart2, &Received, 1);
  HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_5);
  HAL_UART_Receive_IT(&huart1, &Received, 1); // Ponowne w³¹czenie nas³uchiwania
 
+}
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+	 HAL_GPIO_TogglePin(GPIOB,GPIO_PIN_8);//blinking diode if SPI working
+	 HAL_SPI_Receive_IT(&hspi2,&Received2,1);
 }
 /* USER CODE END PFP */
 
@@ -238,15 +233,16 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   MX_USART1_UART_Init();
+  MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
   HAL_UART_Receive_IT(&huart1,&Received,1);
+  HAL_SPI_Receive_IT(&hspi2,&Received2,1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
 
     /* USER CODE END WHILE */
 
@@ -289,6 +285,44 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief SPI2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SPI2_Init(void)
+{
+
+  /* USER CODE BEGIN SPI2_Init 0 */
+
+  /* USER CODE END SPI2_Init 0 */
+
+  /* USER CODE BEGIN SPI2_Init 1 */
+
+  /* USER CODE END SPI2_Init 1 */
+  /* SPI2 parameter configuration*/
+  hspi2.Instance = SPI2;
+  hspi2.Init.Mode = SPI_MODE_SLAVE;
+  hspi2.Init.Direction = SPI_DIRECTION_2LINES_RXONLY;
+  hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi2.Init.NSS = SPI_NSS_SOFT;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi2.Init.CRCPolynomial = 10;
+  if (HAL_SPI_Init(&hspi2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN SPI2_Init 2 */
+
+  /* USER CODE END SPI2_Init 2 */
+
 }
 
 /**
@@ -376,7 +410,8 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, LD2_Pin|segment10_Pin|segment9_Pin|segment5_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, segment4_Pin|segment2_Pin|segment1_Pin|segment7_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, segment4_Pin|segment2_Pin|segment1_Pin|segment7_Pin 
+                          |GPIO_PIN_8, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(segment6_GPIO_Port, segment6_Pin, GPIO_PIN_RESET);
@@ -394,8 +429,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : segment4_Pin segment2_Pin segment1_Pin segment7_Pin */
-  GPIO_InitStruct.Pin = segment4_Pin|segment2_Pin|segment1_Pin|segment7_Pin;
+  /*Configure GPIO pins : segment4_Pin segment2_Pin segment1_Pin segment7_Pin 
+                           PB8 */
+  GPIO_InitStruct.Pin = segment4_Pin|segment2_Pin|segment1_Pin|segment7_Pin 
+                          |GPIO_PIN_8;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
