@@ -25,6 +25,10 @@
 		<nature>fr.ac6.mcu.ide.core.MCUProjectNature</nature>
 	</natures>
 	<linkedResources>
-		
+		<link>
+			<name>lcd_4bits</name>
+			<type>2</type>
+			<location>C:/Users/Piotrek/Desktop/Embedded Project/Project4EmbeddedSystems/CubeFanProjectSlave/lcd_4bits</location>
+		</link>
 	</linkedResources>
 </projectDescription>
