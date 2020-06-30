@@ -90,7 +90,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc1)
 	ADC_Temperature = HAL_ADC_GetValue(&hadc);
 	SetPoint_Temperature = ADC_Temperature*temperatureRange/(ADCResolution-1) + minTemperature ;
 	Duty = (uint32_t)(ADC_Temperature*100/(ADCResolution-1));
-
+	znak2 = (uint8_t)SetPoint_Temperature;
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
